@@ -1,0 +1,84 @@
+
+%{
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+int count = 1;
+int tStartMeeting_count=0;
+int flag=0;
+int after_assign=0;
+
+%}
+
+%x COMMENT
+
+
+%%
+"/*"          { count; BEGIN(COMMENT); }
+<COMMENT>\n   { count++; }
+<COMMENT>"*/" { count; BEGIN(INITIAL); }
+<COMMENT>.    {}
+
+"/*"*[^*/]*\*+\/ {}
+
+= printf("%d_tASSIGN\n",count); after_assign=1;
+endMeeting printf("%d_tENDMEETING\n",count);
+frequency printf("%d_tFREQUENCY\n",count);
+subMeetings printf("%d_tSTARTSUBMEETINGS\n",count);
+Meeting printf( "%d_tSTARTMEETING\n",count);
+endSubMeetings printf("%d_tENDSUBMEETINGS\n",count);
+meetingNumber printf("%d_tMEETINGNUMBER\n",count);
+description printf("%d_tDESCRIPTION\n",count);
+startDate printf("%d_tSTARTDATE\n",count);
+endDate printf("%d_tENDDATE\n",count);
+startTime printf("%d_tSTARTTIME\n",count);
+endTime printf("%d_tENDTIME\n",count);
+yes printf("%d_tYES\n",count);
+no printf("%d_tNO\n",count);
+isRecurring printf("%d_tISRECURRING\n",count);
+locations printf("%d_tLOCATIONS\n",count);
+repetitionCount printf("%d_tREPETITIONCOUNT\n",count);
+, printf("%d_tCOMMA\n",count);
+weekly printf("%d_tWEEKLY\n",count);
+yearly printf("%d_tYEARLY\n",count);
+[\n] count ++; flag = 1;
+
+"\""([^"]*) {
+        printf("%d_tSTRING_(%s)\n", count, yytext);
+    }
+"\""([^"]*)\" {
+        printf("%d_tSTRING_(%s)\n", count, yytext);
+    }
+\/\/([^""\n]*) {}
+
+[0-9]{1,2}\.[0-9]{1,2} printf("%d_tTIME_(%s)\n",count,yytext);
+
+[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4} printf("%d_tDATE_(%s)\n",count,yytext);
+[0-9]+ {
+        int s = atoi(yytext);
+        printf("%d_tINTEGER_(%d)\n",count,s);
+
+
+}
+[ \t\r]+  {}
+[a-zA-Z][a-zA-Z0-9_]*[^ \t\r\n,] {
+    printf("%d_tIDENTIFIER_(%s)\n",count, yytext);
+    after_assign = 0;
+}
+[^ \t\r\n,] { 
+    printf("%d_ILLEGAL_CHARACTER_(%s)\n",count,yytext);
+    }
+%%
+int yywrap(){}
+int main(){
+yylex();
+
+/* hatalar : 
+identifier ve illegal character arası geçiş
+*/
+
+
+//printf("The number of = is ==  \n");
+//printf("Number of meetings =  %d ", tStartMeeting_count);
+return 0;
+}
